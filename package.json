@@ -1,0 +1,22 @@
+{
+  "name": "tx-migration-de-base-de-donn-es-baptist-re-pal-ochr-tiens-back",
+  "version": "1.0.0",
+  "description": "Backend server",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git@gitlab.utc.fr:gthibaud/tx-migration-de-base-de-donn-es-baptist-re-pal-ochr-tiens-back.git"
+  },
+  "keywords": [
+    "back"
+  ],
+  "author": "Anaïs Macé, Grégoire Thibaud",
+  "license": "ISC",
+  "dependencies": {
+    "axios": "^0.19.2",
+    "express": "^4.17.1"
+  }
+}

@@ -17,6 +17,8 @@
   "license": "ISC",
   "dependencies": {
     "axios": "^0.19.2",
+    "connect-timeout": "^1.9.0",
+    "cors": "^2.8.5",
     "express": "^4.17.1"
   }
 }

@@ -2,12 +2,27 @@ const express = require('express');
 const fs = require('fs');
 const app = express();
 const axios = require('axios');
+var timeout = require('connect-timeout');
 
 const AUTH_GRANT_TYPE = "password"
 const AUTH_USERNAME = "humanumlmo"
 const AUTH_SECRET = "9mFcDN7OMaYI9Oy3pZV="
 
-app.get('/baptisteries-cache', (req, res) => {
+app.use(function (req, res, next) {
+    res.header("Access-Control-Allow-Origin", "http://localhost:3000");
+    res.header("Access-Control-Allow-Methods", "GET,HEAD,OPTIONS,POST,PUT");
+    res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, access-control-allow-origin, Content-Type, Accept, Authorization, Content-Type");
+    next();
+});
+
+app.use(timeout(120000));
+app.use(haltOnTimedout);
+
+function haltOnTimedout(req, res, next) {
+    if (!req.timedout) next();
+}
+
+app.get('/baptisteries-cache', (req, res, next) => {
     try {
         const baptisteries = JSON.parse(fs.readFileSync('./cache/baptisteries.json'))
         res.send(baptisteries, '', 4)
@@ -17,9 +32,13 @@ app.get('/baptisteries-cache', (req, res) => {
     updateData()
 });
 
-app.get('/baptisteries-update', (req, res) => {
-
-    res.send('An ba approaches!');
+app.get('/baptisteries-update', (req, res, next) => {
+    updateData()
+        .then(data => res.send(data))
+        .catch(e => res.send({
+            status: "error",
+            message: e
+        }))
 });
 
 app.listen(3003, () => console.log('Baptisteries server now running on port 3003!'));
@@ -67,7 +86,6 @@ const updateData = async () => {
     lastUpdateDate = Date.parse(await headData(token))
 
     // check if client last update date < actual server update date
-    console.log(JSON.parse(fs.readFileSync('./cache/logs.json')).lastUpdate.pop())
     if (JSON.parse(fs.readFileSync('./cache/logs.json')).lastUpdate.pop() < lastUpdateDate) {
 
         // get last data
@@ -75,14 +93,20 @@ const updateData = async () => {
         data = await getData(token)
 
         // write cache file
-        console.log(data)
         fs.writeFileSync('./cache/baptisteries.json', JSON.stringify(data, '', 4))
 
         // update date
         const logs = JSON.parse(fs.readFileSync('./cache/logs.json'))
         logs.lastUpdate.push(Date.now().toString())
         fs.writeFileSync('./cache/logs.json', JSON.stringify(logs, '', 4))
+
+        return {
+            status: "update",
+            data
+        }
     }
 
-    console.log('cache is up to date')
+    return {
+        status: "upToDate"
+    }
 }
